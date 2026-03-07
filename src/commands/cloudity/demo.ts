@@ -1,22 +1,26 @@
+import * as fs from 'node:fs';
+import * as os from 'node:os';
+import * as path from 'node:path';
 import { SfCommand, Flags } from '@salesforce/sf-plugins-core';
 import { Messages } from '@salesforce/core';
-import { uxLog, prompts, WebSocketClient, NotifProvider } from 'sfdx-hardis/plugin-api';
+import { uxLog, uxLogTable, prompts, WebSocketClient, NotifProvider } from 'sfdx-hardis/plugin-api';
 import type { PromptsQuestion, NotifMessage } from 'sfdx-hardis/plugin-api';
 import c from 'chalk';
 
 Messages.importMessagesDirectoryFromMetaUrl(import.meta.url);
-const messages = Messages.loadMessages('sf-plugin-hardis-demo', 'hardis.demo');
+const messages = Messages.loadMessages('sf-plugin-hardis-demo', 'cloudity.demo');
 
-export type HardisDemoResult = {
+export type CloudityDemoResult = {
   success: boolean;
   action: string;
   items: string[];
 };
 
-export default class HardisDemo extends SfCommand<HardisDemoResult> {
+export default class CloudityDemo extends SfCommand<CloudityDemoResult> {
   public static readonly summary = messages.getMessage('summary');
   public static readonly description = messages.getMessage('description');
-  public static readonly examples = messages.getMessages('examples');
+
+  public static readonly examples = ['$ sf cloudity:demo'];
 
   public static readonly flags = {
     action: Flags.string({
@@ -25,15 +29,10 @@ export default class HardisDemo extends SfCommand<HardisDemoResult> {
       description: messages.getMessage('flags.action.description'),
       options: ['analyze', 'report'],
     }),
-    notify: Flags.boolean({
-      char: 'n',
-      summary: messages.getMessage('flags.notify.summary'),
-      default: false,
-    }),
   };
 
-  public async run(): Promise<HardisDemoResult> {
-    const { flags } = await this.parse(HardisDemo);
+  public async run(): Promise<CloudityDemoResult> {
+    const { flags } = await this.parse(CloudityDemo);
 
     // Log messages appear in both terminal and VS Code extension UI
     uxLog('action', this, c.cyan('Starting sfdx-hardis demo plugin...'));
@@ -74,28 +73,50 @@ export default class HardisDemo extends SfCommand<HardisDemoResult> {
 
     WebSocketClient.sendProgressEndMessage(items.length);
 
+    // Display results as a table in both terminal and VS Code extension UI
+    const tableData = items.map((item, index) => ({
+      index: index + 1,
+      name: item,
+      status: 'OK',
+      action: selectedAction,
+    }));
+    uxLogTable(this, tableData, ['index', 'name', 'status', 'action']);
+
+    // Write a JSON report file and send it to the VS Code extension for display
+    const reportFile = path.join(os.tmpdir(), `cloudity-demo-report-${Date.now()}.json`);
+    const reportContent = {
+      action: selectedAction,
+      totalItems: items.length,
+      results: tableData,
+      generatedAt: new Date().toISOString(),
+    };
+    fs.writeFileSync(reportFile, JSON.stringify(reportContent, null, 2), 'utf-8');
+    uxLog('log', this, c.grey(`Report written to: ${reportFile}`));
+    // Send the report file to the VS Code extension sidebar
+    WebSocketClient.sendReportFileMessage(reportFile, 'Cloudity Demo Report', 'report');
+    WebSocketClient.sendReportFileMessage('https://www.cloudity.com', 'Visit Cloudity Website', 'docUrl');
+
     // Generate a summary report
     const reportLines = items.map((item) => `• ${item}: OK`).join('\n');
     uxLog('success', this, c.green(`All ${items.length} items processed successfully!`));
 
     // Optionally send a notification to configured channels (Slack, Teams, etc.)
-    if (flags.notify) {
-      const notifMessage: NotifMessage = {
-        text: `Demo plugin completed action *${selectedAction}*\n- Items processed: ${items.length}`,
-        type: 'DEPLOYMENT',
-        severity: 'success',
-        attachments: [{ text: reportLines }],
-        buttons: [{ text: 'View Repository', url: 'https://github.com/hardisgroupcom/sf-plugin-hardis-demo' }],
-        logElements: items.map((item) => ({ name: item, status: 'OK' })),
-        data: { action: selectedAction, totalItems: items.length },
-        metrics: {
-          DemoItemsProcessed: items.length,
-        },
-      };
-      await NotifProvider.postNotifications(notifMessage);
-      uxLog('success', this, c.green('Notification sent to configured channels.'));
-    }
 
-    return { success: true, action: selectedAction, items } as HardisDemoResult;
+    const notifMessage: NotifMessage = {
+      text: `Demo plugin completed action *${selectedAction}*\n- Items processed: ${items.length}`,
+      type: 'DEPLOYMENT',
+      severity: 'success',
+      attachments: [{ text: reportLines }],
+      buttons: [{ text: 'View Repository', url: 'https://github.com/hardisgroupcom/sf-plugin-hardis-demo' }],
+      logElements: items.map((item) => ({ name: item, status: 'OK' })),
+      data: { action: selectedAction, totalItems: items.length },
+      metrics: {
+        DemoItemsProcessed: items.length,
+      },
+    };
+    await NotifProvider.postNotifications(notifMessage);
+    uxLog('success', this, c.green('Notification sent to configured channels.'));
+
+    return { success: true, action: selectedAction, items } as CloudityDemoResult;
   }
 }

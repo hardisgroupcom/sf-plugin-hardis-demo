@@ -1,7 +1,7 @@
 import { TestContext } from '@salesforce/core/testSetup';
 import { expect } from 'chai';
 import { stubSfCommandUx } from '@salesforce/sf-plugins-core';
-import HardisDemo from '../../../src/commands/hardis/demo.js';
+import CloudityDemo from '../../../src/commands/cloudity/demo.js';
 
 describe('hardis demo', () => {
   const $$ = new TestContext();
@@ -16,26 +16,26 @@ describe('hardis demo', () => {
   });
 
   it('runs hardis demo --action analyze', async () => {
-    const result = await HardisDemo.run(['--action', 'analyze']);
+    const result = await CloudityDemo.run(['--action', 'analyze']);
     expect(result.success).to.be.true;
     expect(result.action).to.equal('analyze');
     expect(result.items).to.deep.equal(['Item1', 'Item2', 'Item3']);
   });
 
   it('runs hardis demo --action report', async () => {
-    const result = await HardisDemo.run(['--action', 'report']);
+    const result = await CloudityDemo.run(['--action', 'report']);
     expect(result.success).to.be.true;
     expect(result.action).to.equal('report');
   });
 
   it('runs hardis demo --action analyze --json', async () => {
-    const result = await HardisDemo.run(['--action', 'analyze', '--json']);
+    const result = await CloudityDemo.run(['--action', 'analyze', '--json']);
     expect(result.success).to.be.true;
     expect(result.action).to.equal('analyze');
   });
 
   it('outputs uxLog messages when running', async () => {
-    await HardisDemo.run(['--action', 'analyze']);
+    await CloudityDemo.run(['--action', 'analyze']);
     const logCalls = sfCommandStubs.log
       .getCalls()
       .flatMap((c) => c.args)

@@ -7,8 +7,9 @@ Run the sfdx-hardis demo command showcasing VS Code extension integration.
 Demonstrates how to use the sfdx-hardis Plugin API:
 
 - **uxLog** — sends log messages to both the terminal and the VS Code extension UI
+- **uxLogTable** — displays tabular data in both the terminal and the VS Code extension UI
 - **prompts** — displays interactive prompts in VS Code (or falls back to terminal)
-- **WebSocketClient** — sends progress indicators and report notifications to VS Code
+- **WebSocketClient** — sends progress indicators and report file notifications to VS Code
 - **NotifProvider** — posts notifications to Slack, MS Teams, Email, or custom API channels
 
 The WebSocket connection is automatically activated because this plugin lists
