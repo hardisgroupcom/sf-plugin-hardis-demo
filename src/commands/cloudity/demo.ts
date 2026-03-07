@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 /* eslint-disable @typescript-eslint/no-unsafe-call */
 import * as fs from 'node:fs';
@@ -29,7 +30,7 @@ export default class CloudityDemo extends SfCommand<CloudityDemoResult> {
       char: 'a',
       summary: messages.getMessage('flags.action.summary'),
       description: messages.getMessage('flags.action.description'),
-      options: ['analyze', 'report'],
+      options: ['someOption', 'anotherOption'],
     }),
   };
 
@@ -54,29 +55,53 @@ export default class CloudityDemo extends SfCommand<CloudityDemoResult> {
         message: 'What would you like to do?',
         description: 'Select a demo action to run',
         choices: [
-          { title: 'Analyze metadata', value: 'analyze' },
-          { title: 'Generate report', value: 'report' },
+          { title: 'Some option', value: 'someOption' },
+          { title: 'Another option', value: 'anotherOption' },
         ],
       };
       const response = (await prompts(actionQuestion)) as { action: string };
       selectedAction = response.action;
     }
 
-    uxLog('action', this, c.cyan(`Selected action: ${selectedAction}`));
+    const multiSelectDemo = await prompts({
+      type: 'multiselect',
+      name: 'items',
+      message: 'Select items to process',
+      description: 'This demonstrates a multi-select prompt with many choices',
+      choices: [
+        { title: 'Item 1', value: 'item1' },
+        { title: 'Item 2', value: 'item2' },
+        { title: 'Item 3', value: 'item3' },
+        { title: 'Item 4', value: 'item4' },
+        { title: 'Item 5', value: 'item5' },
+        { title: 'Item 6', value: 'item6' },
+        { title: 'Item 7', value: 'item7' },
+        { title: 'Item 8', value: 'item8' },
+        { title: 'Item 9', value: 'item9' },
+        { title: 'Item 10', value: 'item10' },
+      ],
+    });
+    const selectedItems = (multiSelectDemo.items ?? []) as string[];
+
+    uxLog('action', this, c.cyan(`Running stuff for action: ${selectedAction} and selected items: ${selectedItems.join(', ')}`));
 
     // Show progress in VS Code
-    const items = ['Item1', 'Item2', 'Item3'];
+    const items = selectedItems.length > 0 ? selectedItems : ['Item1', 'Item2', 'Item3'];
     WebSocketClient.sendProgressStartMessage('Processing demo items', items.length);
 
     for (let i = 0; i < items.length; i++) {
       uxLog('log', this, c.grey(`Processing ${items[i]}...`));
+      // eslint-disable-next-line no-await-in-loop
+      await new Promise((resolve) => setTimeout(resolve, 1000)); // Simulate async work
       WebSocketClient.sendProgressStepMessage(i + 1, items.length);
     }
 
     WebSocketClient.sendProgressEndMessage(items.length);
 
+
+    uxLog('action', this, c.cyan(`Dummy results: ${selectedAction}`));
     // Display results as a table in both terminal and VS Code extension UI
-    const tableData = items.map((item, index) => ({
+    const tableData: object[] = items.map((item: string, index: number) => ({
       index: index + 1,
       name: item,
       status: 'OK',
@@ -99,7 +124,7 @@ export default class CloudityDemo extends SfCommand<CloudityDemoResult> {
     WebSocketClient.sendReportFileMessage('https://www.cloudity.com', 'Visit Cloudity Website', 'docUrl');
 
     // Generate a summary report
-    const reportLines = items.map((item) => `• ${item}: OK`).join('\n');
+    const reportLines = items.map((item: string) => `• ${item}: OK`).join('\n');
     uxLog('success', this, c.green(`All ${items.length} items processed successfully!`));
 
     // Optionally send a notification to configured channels (Slack, Teams, etc.)
@@ -110,7 +135,7 @@ export default class CloudityDemo extends SfCommand<CloudityDemoResult> {
       severity: 'success',
       attachments: [{ text: reportLines }],
       buttons: [{ text: 'View Repository', url: 'https://github.com/hardisgroupcom/sf-plugin-hardis-demo' }],
-      logElements: items.map((item) => ({ name: item, status: 'OK' })),
+      logElements: items.map((item: string) => ({ name: item, status: 'OK' })),
       data: { action: selectedAction, totalItems: items.length },
       metrics: {
         DemoItemsProcessed: items.length,
