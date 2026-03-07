@@ -16,26 +16,35 @@ describe('hardis demo', () => {
   });
 
   it('runs hardis demo --action analyze', async () => {
-    const result = await CloudityDemo.run(['--action', 'analyze']);
+    const result = await CloudityDemo.run([
+      '--action',
+      'someOption',
+      '--items',
+      'Item1',
+      '--items',
+      'Item2',
+      '--items',
+      'Item3',
+    ]);
     expect(result.success).to.be.true;
-    expect(result.action).to.equal('analyze');
+    expect(result.action).to.equal('someOption');
     expect(result.items).to.deep.equal(['Item1', 'Item2', 'Item3']);
   });
 
   it('runs hardis demo --action report', async () => {
-    const result = await CloudityDemo.run(['--action', 'report']);
+    const result = await CloudityDemo.run(['--action', 'anotherOption', '--items', 'Item1']);
     expect(result.success).to.be.true;
-    expect(result.action).to.equal('report');
+    expect(result.action).to.equal('anotherOption');
   });
 
   it('runs hardis demo --action analyze --json', async () => {
-    const result = await CloudityDemo.run(['--action', 'analyze', '--json']);
+    const result = await CloudityDemo.run(['--action', 'someOption', '--items', 'Item1', '--json']);
     expect(result.success).to.be.true;
-    expect(result.action).to.equal('analyze');
+    expect(result.action).to.equal('someOption');
   });
 
   it('outputs uxLog messages when running', async () => {
-    await CloudityDemo.run(['--action', 'analyze']);
+    await CloudityDemo.run(['--action', 'someOption', '--items', 'Item1']);
     const logCalls = sfCommandStubs.log
       .getCalls()
       .flatMap((c) => c.args)
