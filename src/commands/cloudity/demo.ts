@@ -32,6 +32,12 @@ export default class CloudityDemo extends SfCommand<CloudityDemoResult> {
       description: messages.getMessage('flags.action.description'),
       options: ['someOption', 'anotherOption'],
     }),
+    items: Flags.string({
+      char: 'i',
+      summary: messages.getMessage('flags.items.summary'),
+      description: messages.getMessage('flags.items.description'),
+      multiple: true,
+    }),
   };
 
   public async run(): Promise<CloudityDemoResult> {
@@ -63,27 +69,34 @@ export default class CloudityDemo extends SfCommand<CloudityDemoResult> {
       selectedAction = response.action;
     }
 
-    const multiSelectDemo = await prompts({
-      type: 'multiselect',
-      name: 'items',
-      message: 'Select items to process',
-      description: 'This demonstrates a multi-select prompt with many choices',
-      choices: [
-        { title: 'Item 1', value: 'item1' },
-        { title: 'Item 2', value: 'item2' },
-        { title: 'Item 3', value: 'item3' },
-        { title: 'Item 4', value: 'item4' },
-        { title: 'Item 5', value: 'item5' },
-        { title: 'Item 6', value: 'item6' },
-        { title: 'Item 7', value: 'item7' },
-        { title: 'Item 8', value: 'item8' },
-        { title: 'Item 9', value: 'item9' },
-        { title: 'Item 10', value: 'item10' },
-      ],
-    });
-    const selectedItems = (multiSelectDemo.items ?? []) as string[];
+    let selectedItems: string[] = flags.items ?? [];
+    if (selectedItems.length === 0) {
+      const multiSelectDemo = await prompts({
+        type: 'multiselect',
+        name: 'items',
+        message: 'Select items to process',
+        description: 'This demonstrates a multi-select prompt with many choices',
+        choices: [
+          { title: 'Item 1', value: 'item1' },
+          { title: 'Item 2', value: 'item2' },
+          { title: 'Item 3', value: 'item3' },
+          { title: 'Item 4', value: 'item4' },
+          { title: 'Item 5', value: 'item5' },
+          { title: 'Item 6', value: 'item6' },
+          { title: 'Item 7', value: 'item7' },
+          { title: 'Item 8', value: 'item8' },
+          { title: 'Item 9', value: 'item9' },
+          { title: 'Item 10', value: 'item10' },
+        ],
+      });
+      selectedItems = (multiSelectDemo.items ?? []) as string[];
+    }
 
-    uxLog('action', this, c.cyan(`Running stuff for action: ${selectedAction} and selected items: ${selectedItems.join(', ')}`));
+    uxLog(
+      'action',
+      this,
+      c.cyan(`Running stuff for action: ${selectedAction} and selected items: ${selectedItems.join(', ')}`)
+    );
 
     // Show progress in VS Code
     const items = selectedItems.length > 0 ? selectedItems : ['Item1', 'Item2', 'Item3'];
@@ -97,7 +110,6 @@ export default class CloudityDemo extends SfCommand<CloudityDemoResult> {
     }
 
     WebSocketClient.sendProgressEndMessage(items.length);
-
 
     uxLog('action', this, c.cyan(`Dummy results: ${selectedAction}`));
     // Display results as a table in both terminal and VS Code extension UI

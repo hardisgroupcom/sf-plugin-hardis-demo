@@ -23,6 +23,14 @@ Action to perform: 'analyze' or 'report'.
 
 Pass this flag to skip the interactive prompt and run in CI mode.
 
+# flags.items.summary
+
+Items to process (can be specified multiple times).
+
+# flags.items.description
+
+Pass one or more items to skip the interactive multi-select prompt. Example: --items item1 --items item2
+
 # flags.notify.summary
 
 Send a notification to configured channels (Slack, MS Teams, Email, etc.).
