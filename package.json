@@ -7,7 +7,7 @@
     "@salesforce/core": "^8",
     "@salesforce/sf-plugins-core": "^12",
     "chalk": "^5.6.2",
-    "sfdx-hardis": "file:C:/git/sfdx-hardis/sfdx-hardis-v6.27.0.tgz"
+    "sfdx-hardis": "^6.27.1-alpha202603072149.0"
   },
   "devDependencies": {
     "@oclif/plugin-command-snapshot": "^5.1.9",

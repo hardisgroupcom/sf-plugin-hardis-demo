@@ -11883,9 +11883,10 @@ setimmediate@^1.0.5, setimmediate@~1.0.4:
   resolved "https://registry.yarnpkg.com/setimmediate/-/setimmediate-1.0.5.tgz#290cbb232e306942d7d7ea9b83732ab7856f8285"
   integrity sha512-MATJdZp8sLqDl/68LfQmbP8zKPLQNV6BIZoIgrscFDQ+RsvK/BxeDQOgyxKKoh0y/8h3BqVFnCqQ/gd+reiIXA==
 
-"sfdx-hardis@file:../sfdx-hardis/sfdx-hardis-v6.27.0.tgz":
-  version "6.27.0"
-  resolved "file:../sfdx-hardis/sfdx-hardis-v6.27.0.tgz#a4eff9d28de6a379665ff24c31d1b2f30ac70d96"
+sfdx-hardis@^6.27.1-alpha202603072149.0:
+  version "6.27.1-alpha202603072149.0"
+  resolved "https://registry.yarnpkg.com/sfdx-hardis/-/sfdx-hardis-6.27.1-alpha202603072149.0.tgz#95dad371608006252022420485b41c0a17fc4216"
+  integrity sha512-wYdbbslNUocG6+BaztNkA27icZIUTnDbYe3C+FRRCUWnSFvN1svyPxvaRxYru89N016PRDL+0wforAiMl5YuZg==
   dependencies:
     "@actions/github" "7.0.0"
     "@cparra/apexdocs" "3.20.1"
