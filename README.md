@@ -14,6 +14,8 @@ This repository demonstrates how to build a community plugin for sfdx-hardis tha
 
 The WebSocket connection is automatically activated because this plugin lists `sfdx-hardis` in its `dependencies`.
 
+![](docs/images/sfdx-hardis-plugin-demo.gif)
+
 ## Getting Started
 
 ### Prerequisites
