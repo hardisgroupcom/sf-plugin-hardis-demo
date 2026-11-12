@@ -11,6 +11,7 @@ This repository demonstrates how to build a community plugin for sfdx-hardis tha
 - Uses **`prompts`** to display interactive prompts in VS Code (with terminal fallback)
 - Uses **`WebSocketClient`** to send progress indicators and report file notifications to VS Code
 - Uses **`NotifProvider`** to post notifications to Slack, MS Teams, Email, or custom API channels
+- Listens to the **sfdx-hardis events** sent when Salesforce returns a validation, deployment or Apex test run result, and posts its own Pull Request comment with **`postPullRequestComment`**
 
 The WebSocket connection is automatically activated because this plugin lists `sfdx-hardis` in its `dependencies`.
 
@@ -53,6 +54,39 @@ sf cloudity demo --action anotherOption --items item1 --items item3 --items item
 | ---------- | ----- | --------------------------------------------------------------------------------- |
 | `--action` | `-a`  | Action to perform: `someOption` or `anotherOption` (skips the interactive prompt) |
 | `--items`  | `-i`  | Items to process — repeatable (skips the interactive multi-select prompt)         |
+
+### Events
+
+The plugin listens to the events that sfdx-hardis sends as soon as Salesforce returns a result:
+
+| Event                         | Sent by                                                                                     |
+| ----------------------------- | ------------------------------------------------------------------------------------------- |
+| `sfdx-hardis:validation-done` | `hardis:project:deploy:smart` in check mode, `hardis:project:deploy:validate`               |
+| `sfdx-hardis:deployment-done` | `hardis:project:deploy:smart`, `hardis:project:deploy:start`, `hardis:project:deploy:quick` |
+| `sfdx-hardis:apex-tests-done` | `hardis:org:test:apex`                                                                      |
+
+They are declared under `oclif.hooks` in [package.json](package.json), and handled by [src/hooks/sfdxHardisRunDone.ts](src/hooks/sfdxHardisRunDone.ts). oclif only loads the hook when sfdx-hardis fires one of these events.
+
+In a CI/CD job with a Pull Request, the hook posts a comment with the event, its status, the Apex tests and the number of Apex classes in the coverage file. The next event of the same kind updates the same comment. The sfdx-hardis comments are never touched.
+
+```typescript
+import { postPullRequestComment } from 'sfdx-hardis/plugin-api';
+import type { SfdxHardisEventHookOptions, SfdxHardisRunEvent } from 'sfdx-hardis/plugin-api';
+
+const hook = async function (options: SfdxHardisEventHookOptions<SfdxHardisRunEvent>): Promise<void> {
+  await postPullRequestComment({
+    pluginName: 'sf-plugin-hardis-demo',
+    messageKey: options.data.checkOnly ? 'validation' : 'deployment',
+    title: 'Demo plugin: Salesforce run result',
+    markdown: buildRunSummaryMarkdown(options),
+    status: options.data.status === 'failed' ? 'invalid' : 'valid',
+  });
+};
+
+export default hook;
+```
+
+See [React to sfdx-hardis events](https://sfdx-hardis.cloudity.com/sfdx-hardis-plugins/#react-to-sfdx-hardis-events) for the content of the events.
 
 ## Plugin API Usage
 
@@ -117,6 +151,6 @@ yarn test
 
 ## Learn More
 
-- [Creating sfdx-hardis Plugins — Full Guide](https://sfdx-hardis.cloudity.com/creating-plugins/)
+- [Creating sfdx-hardis Plugins — Full Guide](https://sfdx-hardis.cloudity.com/sfdx-hardis-plugins/)
 - [sfdx-hardis VS Code Extension](https://marketplace.visualstudio.com/items?itemName=NicolasVuillamy.vscode-sfdx-hardis)
 - [sfdx-hardis GitHub Repository](https://github.com/hardisgroupcom/sfdx-hardis)
